@@ -12,7 +12,24 @@ var builder = Host.CreateDefaultBuilder();
 builder.ConfigureHostConfiguration(icb => { icb.AddUserSecrets<Program>(); });
 var host = builder.Build();
 var configuration = host.Services.GetRequiredService<IConfiguration>();
-var apiKey = configuration.GetSection("OpenAIServiceOptions")["ApiKey"];
+//var apiKey = configuration.GetSection("OpenAIServiceOptions")["ApiKey"];
+var apiKey = ConfigService.GetApiKey();
+if (apiKey == null || apiKey == "")
+{
+    Console.ForegroundColor = ConsoleColor.DarkRed;
+    Console.WriteLine("ERROR: ApiKey no encontrada.");
+    Console.ForegroundColor = ConsoleColor.White;
+    Console.WriteLine("No se ha encontrado la clave API de OpenAI, por favor, añádela al archivo 'OpenAIApiKey.txt'.");
+    Console.Write("Puedes obtener una clave API en ");
+    Console.ForegroundColor = ConsoleColor.Blue;
+    Console.Write("https://platform.openai.com/account/api-keys");
+    Console.WriteLine();
+    Console.WriteLine();
+    Console.ForegroundColor = ConsoleColor.White;
+    Console.WriteLine("Pulsa cualquier tecla para salir...");
+    Console.ReadKey();
+    return;
+}
 var openAiService = new OpenAIService(new OpenAiOptions() { ApiKey = apiKey! });
 #endregion
 
