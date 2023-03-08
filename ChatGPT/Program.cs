@@ -1,25 +1,38 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using OpenAI.GPT3.Managers;
-using OpenAI.GPT3;
+﻿using ChatGPT;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using OpenAI.GPT3.ObjectModels.RequestModels;
+using Microsoft.Extensions.Hosting;
+using OpenAI.GPT3;
+using OpenAI.GPT3.Managers;
 using OpenAI.GPT3.ObjectModels;
-using ChatGPT;
+using OpenAI.GPT3.ObjectModels.RequestModels;
 
 #region Configuration
-var builder = Host.CreateDefaultBuilder();
-builder.ConfigureHostConfiguration(icb => { icb.AddUserSecrets<Program>(); });
-var host = builder.Build();
-var configuration = host.Services.GetRequiredService<IConfiguration>();
-//var apiKey = configuration.GetSection("OpenAIServiceOptions")["ApiKey"];
-var apiKey = ConfigService.GetApiKey();
+string apiKey;
+
+#if DEBUG
+    var builder = Host.CreateDefaultBuilder();
+    builder.ConfigureHostConfiguration(icb => { icb.AddUserSecrets<Program>(); });
+    var host = builder.Build();
+    var configuration = host.Services.GetRequiredService<IConfiguration>();
+    apiKey = configuration.GetSection("OpenAIServiceOptions")["ApiKey"]!;
+#else
+    var algo = ConfigService.GetApiKey();
+    string[] arguments = Environment.GetCommandLineArgs();
+    if (arguments.Length > 1)
+        apiKey = arguments[1];
+    else
+        apiKey = ConfigService.GetApiKey();
+#endif
+
 if (apiKey == null || apiKey == "")
 {
     Console.ForegroundColor = ConsoleColor.DarkRed;
     Console.WriteLine("ERROR: ApiKey no encontrada.");
     Console.ForegroundColor = ConsoleColor.White;
-    Console.WriteLine("No se ha encontrado la clave API de OpenAI, por favor, añádela al archivo 'OpenAIApiKey.txt'.");
+    Console.WriteLine("No se ha encontrado la clave API de OpenAI, por favor, añádela al archivo 'OpenAIApiKey.txt'");
+    Console.WriteLine("o ejecuta el programa indicando la ApiKey como parámetro, por ejemplo: ./ChatGPT mi-api-key");
+    Console.WriteLine();
     Console.Write("Puedes obtener una clave API en ");
     Console.ForegroundColor = ConsoleColor.Blue;
     Console.Write("https://platform.openai.com/account/api-keys");
@@ -44,7 +57,6 @@ string name = Console.ReadLine()!;
 Console.WriteLine();
 
 string prompt = $"Hola, me llamo {name}";
-
 
 var messages = new List<ChatMessage>
 {
@@ -97,6 +109,3 @@ do
 
 }
 while (prompt.ToLower() != "salir");
-Console.ResetColor();
-
-

@@ -4,9 +4,16 @@
     {
         public static string GetApiKey()
         {
-            string filePath = Path.Combine(AppContext.BaseDirectory, "OpenAIApiKey.txt");
-            string content = File.ReadAllText(filePath);
-            return content;
+            try
+            {
+                string filePath = Path.Combine(AppContext.BaseDirectory, "OpenAIApiKey.txt");
+                string content = File.ReadAllText(filePath);
+                return content;
+            }
+            catch (Exception)
+            {
+                return null!;
+            }
         }
     }
 }
