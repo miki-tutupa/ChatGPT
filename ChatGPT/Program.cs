@@ -2,20 +2,20 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using OpenAI.GPT3;
-using OpenAI.GPT3.Managers;
-using OpenAI.GPT3.ObjectModels;
-using OpenAI.GPT3.ObjectModels.RequestModels;
+using OpenAI;
+using OpenAI.Managers;
+using OpenAI.ObjectModels;
+using OpenAI.ObjectModels.RequestModels;
 
 #region Configuration
 string apiKey;
 
 #if DEBUG
-    var builder = Host.CreateDefaultBuilder();
-    builder.ConfigureHostConfiguration(icb => { icb.AddUserSecrets<Program>(); });
-    var host = builder.Build();
-    var configuration = host.Services.GetRequiredService<IConfiguration>();
-    apiKey = configuration.GetSection("OpenAIServiceOptions")["ApiKey"]!;
+var builder = Host.CreateDefaultBuilder();
+builder.ConfigureHostConfiguration(icb => { icb.AddUserSecrets<Program>(); });
+var host = builder.Build();
+var configuration = host.Services.GetRequiredService<IConfiguration>();
+apiKey = configuration.GetSection("OpenAIServiceOptions")["ApiKey"]!;
 #else
     var algo = ConfigService.GetApiKey();
     string[] arguments = Environment.GetCommandLineArgs();
@@ -72,7 +72,7 @@ do
         var completionResult = await openAiService.ChatCompletion.CreateCompletion(new ChatCompletionCreateRequest
         {
             Messages = messages,
-            Model = Models.ChatGpt3_5Turbo,
+            Model = Models.Gpt_4o,
             MaxTokens = 250,
             Temperature = (float?)0.8
         });
@@ -81,7 +81,7 @@ do
         {
             var response = completionResult.Choices.First().Message.Content;
             if (response[..4] == @"\n\n") response = response[4..];
-            messages.Add(ChatMessage.FromAssistance(response));
+            messages.Add(ChatMessage.FromAssistant(response));
 
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine("-ChatGPT dice: ");
